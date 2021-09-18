@@ -22,7 +22,7 @@ profile = {
 
 
 @app.route("/")
-def profile():
+def profileSettings():
     return "profile settings"
 
 
