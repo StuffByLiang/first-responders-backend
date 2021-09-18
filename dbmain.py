@@ -67,7 +67,9 @@ def parse_cmdline():
     opt = parser.parse_args()
     return opt
 
-def get_roach_engine(conn_string):
+def get_roach_engine():
+    opt = parse_cmdline()
+    conn_string = opt.url
     try:
         db_uri = os.path.expandvars(conn_string)
         db_uri = urllib.parse.unquote(db_uri)
@@ -107,12 +109,9 @@ if __name__ == '__main__':
         'weight': 50
     }
 
-    opt = parse_cmdline()
-    conn_string = opt.url
-
     # For CockroachCloud:
     # postgres://<username>:<password>@<globalhost>:26257/<cluster_name>.defaultdb?sslmode=verify-full&sslrootcert=<certs_dir>/<ca.crt>
-    engine = get_roach_engine(conn_string)
+    engine = get_roach_engine()
     
     '''Tests'''
     # Create Test Account 
