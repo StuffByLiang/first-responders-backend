@@ -20,11 +20,11 @@ profile = {
 def profile():
     return "profile settings"
 
-@app.route('/userinfo', methods = ['GET'])
+@app.route("/userinfo", methods = ['GET'])
 def retrieve():
     return jsonify({'profile': profile})
 
-@app.route('/signup', methods=["POST"])
+@app.route("/signup", methods=["POST", "GET"])
 def signup():
     if not all(userField in request.json for userField in ("name", "age", "address", "emergency contact", "blood type", "BMI", "height", "weight")):
         abort(400, description="Resource not found")
@@ -32,7 +32,7 @@ def signup():
         abort(400, description="Keys are supposed to be string")
     if not (field is int or float for field in ("age", "BMI", "weight", "height")):
         abort(400, description="Keys are supposed to be numbers")
-        
+
     profile['name'] = request.json['name']
     profile['age'] = request.json['age']
     profile['address'] = request.json['address']
@@ -47,7 +47,7 @@ def signup():
 
     return jsonify(result = "Account created!")
 
-@app.route('/edit', methods=['PUT'])
+@app.route('/edit', methods=['PUT', "GET"])
 def edit():
     if not all(userField in request.json for userField in ("name", "age", "address", "emergency contact", "blood type", "BMI", "height", "weight")):
         abort(400, description="Resource not found")
