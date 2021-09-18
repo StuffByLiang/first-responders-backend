@@ -28,7 +28,7 @@ def profile():
 
 @app.route("/userinfo", methods=["GET"])
 def retrieve():
-    return userinfo
+    return profile
 
 
 load_dotenv()
