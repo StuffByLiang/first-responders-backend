@@ -10,7 +10,7 @@ profile = {
     'allergies': [],
     'blood type': "AB",
     'conditions': [],
-    'medications': "",
+    'medications': [],
     'BMI': 3,
     'height': 165,
     'weight': 50
@@ -20,7 +20,7 @@ profile = {
 def profile():
     return "profile settings"
 
-@app.route('/retrieve', methods = ['GET'])
+@app.route('/userinfo', methods = ['GET'])
 def retrieve():
     return jsonify({'profile': profile})
 
