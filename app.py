@@ -19,18 +19,18 @@ profile = {
     "medications": [],
     "BMI": 3,
     "height": 165,
-    "weight": 50,
+    "weight": 50
 }
 
 
 @app.route("/")
-def profile():
+def profileSettings():
     return "profile settings"
 
 
 @app.route("/userinfo", methods=["GET"])
 def retrieve():
-    return userinfo
+    return profile
 
 
 load_dotenv()
@@ -59,7 +59,7 @@ def login():
     return {"token": token.to_jwt().decode()}
 
 
-@app.route("/signup", methods=["POST"])
+@app.route("/signup", methods=["POST", "GET"])
 def signup():
     if not all(
         userField in request.json
@@ -82,22 +82,21 @@ def signup():
     if not (field is int or float for field in ("age", "BMI", "weight", "height")):
         abort(400, description="Keys are supposed to be numbers")
 
-    profile["name"] = request.json["name"]
-    profile["age"] = request.json["age"]
-    profile["address"] = request.json["address"]
-    profile["emergency contact"] = request.json["emergency contact"]
-    profile["allergies"] = request.json["allergies"]
-    profile["blood type"] = request.json["blood type"]
-    profile["conditions"] = request.json["conditions"]
-    profile["medications"] = request.json["medications"]
-    profile["BMI"] = request.json["BMI"]
-    profile["height"] = request.json["height"]
-    profile["weight"] = request.json["weight"]
+    profile['name'] = request.json['name']
+    profile['age'] = request.json['age']
+    profile['address'] = request.json['address']
+    profile['emergency contact'] = request.json['emergency contact']
+    profile['allergies'] = request.json['allergies']
+    profile['blood type'] = request.json['blood type']
+    profile['conditions'] = request.json['conditions']
+    profile['medications'] = request.json['medications']
+    profile['BMI'] = request.json['BMI']
+    profile['height'] = request.json['height']
+    profile['weight'] = request.json['weight']
 
-    return jsonify(result="Account created!")
+    return jsonify(result = "Account created!")
 
-
-@app.route("/edit", methods=["PUT"])
+@app.route('/edit', methods=["PUT", "GET"])
 def edit():
     if not all(
         userField in request.json
