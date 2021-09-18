@@ -14,22 +14,6 @@ from models import Account
 
 # The code below inserts new accounts.
 
-
-def create_accounts(session, num):
-    """Create N new accounts with random account IDs and account balances.
-    """
-    print("Creating new accounts...")
-    new_accounts = []
-    while num > 0:
-        account_id = uuid.uuid4()
-        account_balance = floor(random.random()*1_000_000)
-        new_accounts.append(Account(id=account_id, balance=account_balance))
-        seen_account_ids.append(account_id)
-        print("Created new account with id {0} and balance {1}.".format(
-            account_id, account_balance))
-        num = num - 1
-    session.add_all(new_accounts)
-
 def create_account(session, account_info, id=None):
     """ Create account with a agenerated UUID and stores account_info to accounts table
     """
@@ -48,6 +32,13 @@ def query_account(session, id, fields=None):
     print(f"Accessed account of {account.name}")
     # print(account.name, account['age'], account.get_fields())
     return account.get_fields(fields)
+
+def edit_account(session, id, account_info):
+    """Edit account with id for the given fields in account_info
+    """
+    account = session.query(Account).filter(Account.id == id).first()
+    for field in account_info.keys():
+        account[field] = account_info[field]
 
 
 def delete_accounts(session, ids):
@@ -91,10 +82,6 @@ def get_roach_engine():
     
 
 if __name__ == '__main__':
-    load_dotenv()
-    # conn_string = os.environ.get('COCKROACHDB_CONN_STRING')
-    # print(conn_string)
-
     test = {
         'name': "Annie Liu",
         'age': 20,
