@@ -29,7 +29,7 @@ profile = {
 }
 
 @app.route("/")
-def profile():
+def profileSettings():
     return "profile settings"
 
 
@@ -64,7 +64,7 @@ def login():
     return {"token": token.to_jwt().decode()}
 
 
-@app.route("/signup", methods=["POST"])
+@app.route("/signup", methods=["POST", "GET"])
 def signup():
     if not all(
         userField in request.json
@@ -87,25 +87,24 @@ def signup():
     if not (field is int or float for field in ("age", "bmi", "weight", "height")):
         abort(400, description="Keys are supposed to be numbers")
 
-    profile["name"] = request.json["name"]
-    profile["age"] = request.json["age"]
-    profile["address"] = request.json["address"]
-    profile["emergency_contact"] = request.json["emergency_contact"]
-    profile["allergies"] = request.json["allergies"]
-    profile["blood_type"] = request.json["blood_type"]
-    profile["conditions"] = request.json["conditions"]
-    profile["medications"] = request.json["medications"]
-    profile["bmi"] = request.json["bmi"]
-    profile["height"] = request.json["height"]
-    profile["weight"] = request.json["weight"]
+    profile['name'] = request.json['name']
+    profile['age'] = request.json['age']
+    profile['address'] = request.json['address']
+    profile['emergency_contact'] = request.json['emergency_contact']
+    profile['allergies'] = request.json['allergies']
+    profile['blood_type'] = request.json['blood_type']
+    profile['conditions'] = request.json['conditions']
+    profile['medications'] = request.json['medications']
+    profile['bmi'] = request.json['bmi']
+    profile['height'] = request.json['height']
+    profile['weight'] = request.json['weight']
 
     id = run_transaction(sessionmaker(bind=engine), lambda s: create_account(s, profile))
     usr_ids.append(id)
 
     return jsonify(id=id, result = "Account created!")
 
-
-@app.route("/edit", methods=["PUT"])
+@app.route('/edit', methods=["PUT", "GET"])
 def edit():
     if not all(
         userField in request.json
@@ -128,6 +127,7 @@ def edit():
     if not (field is int or float for field in ("age", "bmi", "weight", "height")):
         abort(400, description="Keys are supposed to be numbers")
 
+    profile["id"] = request.json.get(["id"], profile["id"])
     profile["name"] = request.json.get(["name"], profile["name"])
     profile["age"] = request.json.get(["age"], profile["age"])
     profile["address"] = request.json.get(["address"], profile["address"])
