@@ -1,4 +1,8 @@
 *.pyc
 .DS_Store
+.env
 env
 venv
+ngrok
+.*
+.root.crt
