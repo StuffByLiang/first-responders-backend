@@ -2,13 +2,7 @@
 
 https://flask.palletsprojects.com/en/2.0.x/installation/#create-an-environment
 
-## install requirements
-
-```
-pip install -r path/to/requirements.txt
-```
-
-Make sure to activate the venv environment
+## Make sure to activate the venv environment
 
 MAC
 ```
@@ -18,6 +12,12 @@ MAC
 Windows
 ```
 venv\Scripts\activate
+```
+
+## install requirements
+
+```
+pip install -r ./requirements.txt
 ```
 
 ## Run the server!
