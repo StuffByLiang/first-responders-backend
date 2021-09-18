@@ -7,17 +7,17 @@ from twilio.jwt.access_token.grants import VideoGrant
 app = Flask(__name__)
 
 profile = {
-    'name': "Annie Liu",
-    'age': 20,
-    'address': "2205 Lower Mall",
-    'emergency contact': "Linda Ma",
-    'allergies': [],
-    'blood type': "AB",
-    'conditions': [],
-    'medications': [],
-    'BMI': 3,
-    'height': 165,
-    'weight': 50
+    "name": "Annie Liu",
+    "age": 20,
+    "address": "2205 Lower Mall",
+    "emergency contact": "Linda Ma",
+    "allergies": [],
+    "blood type": "AB",
+    "conditions": [],
+    "medications": [],
+    "BMI": 3,
+    "height": 165,
+    "weight": 50
 }
 
 
