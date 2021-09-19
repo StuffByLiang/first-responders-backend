@@ -4,7 +4,7 @@ from flask import Flask, render_template, request, abort, jsonify, make_response
 from flask_cors import CORS
 from twilio.jwt.access_token import AccessToken
 from twilio.jwt.access_token.grants import VideoGrant
-
+import uuid
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy_cockroachdb import run_transaction
 from dbmain import (
@@ -20,15 +20,15 @@ app = Flask(__name__)
 CORS(app)  # enable cors from all domains
 
 profile = {
-    "id": None,
+    "id": uuid.uuid4(),
     "name": "Annie Liu",
     "age": 20,
     "address": "2205 Lower Mall",
     "emergency_contact": "Linda Ma",
-    "allergies": [],
-    "blood_type": "AB",
-    "conditions": [],
-    "medications": [],
+    "allergies": "",
+    "blood_type": "AB", 
+    "conditions": "",
+    "medications": "",
     "bmi": 3,
     "height": 165,
     "weight": 50,
@@ -43,7 +43,7 @@ def profileSettings():
 @app.route("/userinfo", methods=["GET"])
 def retrieve():
     usr_info = run_transaction(
-        sessionmaker(bind=engine), lambda s: query_account(s, usr_ids[0])
+        sessionmaker(bind=engine), lambda s: query_account(s, profile["id"])
     )
     return jsonify(usr_info)
 
@@ -101,10 +101,10 @@ def signup():
     profile["age"] = request.json["age"]
     profile["address"] = request.json["address"]
     profile["emergency_contact"] = request.json["emergency_contact"]
-    profile["allergies"] = request.json["allergies"]
+    profile["allergies"] = (",").join(request.json["allergies"])
     profile["blood_type"] = request.json["blood_type"]
-    profile["conditions"] = request.json["conditions"]
-    profile["medications"] = request.json["medications"]
+    profile["conditions"] = (",").join(request.json["conditions"])
+    profile["medications"] =  (",").join(request.json["medications"])
     profile["bmi"] = request.json["bmi"]
     profile["height"] = request.json["height"]
     profile["weight"] = request.json["weight"]
@@ -112,7 +112,7 @@ def signup():
     id = run_transaction(
         sessionmaker(bind=engine), lambda s: create_account(s, profile)
     )
-    profile["id"] = id
+    # profile["id"] = id
     usr_ids.append(id)
 
     return jsonify(id=id, result="Account created!")
@@ -129,26 +129,30 @@ def edit():
     if not (field is int or float for field in ("age", "bmi", "weight", "height")):
         abort(400, description="Keys are supposed to be numbers")
 
-    profile["name"] = request.json.get(["name"], profile["name"])
-    profile["age"] = request.json.get(["age"], profile["age"])
-    profile["address"] = request.json.get(["address"], profile["address"])
+    profile["name"] = request.json.get("name", profile["name"])
+    profile["age"] = request.json.get("age", profile["age"])
+    profile["address"] = request.json.get("address", profile["address"])
     profile["emergency_contact"] = request.json.get(
-        ["emergency_contact"], profile["emergency_contact"]
+        "emergency_contact", profile["emergency_contact"]
     )
-    profile["allergies"] = request.json.get(["allergies"], profile["allergies"])
-    profile["blood_type"] = request.json.get(["blood_type"], profile["blood_type"])
-    profile["conditions"] = request.json.get(["conditions"], profile["conditions"])
-    profile["medications"] = request.json.get(["medications"], profile["medications"])
-    profile["bmi"] = request.json.get(["bmi"], profile["bmi"])
-    profile["height"] = request.json.get(["height"], profile["height"])
-    profile["weight"] = request.json.get(["weight"], profile["weight"])
+    if "allergies" in request.json:
+        profile["allergies"]=(",").join(request.json["allergies"])
+    
+    profile["blood_type"] = request.json.get("blood_type", profile["blood_type"])
+    if "conditions" in request.json:
+        profile["conditions"]=(",").join(request.json["conditions"])
+    if "medications" in request.json:
+        profile["medications"]=(",").join(request.json["medications"])
+    profile["bmi"] = request.json.get("bmi", profile["bmi"])
+    profile["height"] = request.json.get("height", profile["height"])
+    profile["weight"] = request.json.get("weight", profile["weight"])
 
-    run_transaction(sessionmaker(bind=engine), lambda s: edit_account(s, profile))
+    run_transaction(sessionmaker(bind=engine), lambda s: edit_account(s, profile["id"], profile))
 
-    return jsonify({"profile": profile}, result="Successfully edited!")
+    return jsonify({"profile": profile, "result": "Successfully edited!"})
 
 
 if __name__ == "__main__":
-    # engine = get_roach_engine()
+    engine = get_roach_engine()
     usr_ids = []
     app.run(debug=True)
