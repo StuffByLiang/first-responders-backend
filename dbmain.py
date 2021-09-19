@@ -19,6 +19,7 @@ def create_account(session, account_info, id=None):
     print("Creating new account")
     account_id = uuid.uuid4() if id is None else id
     new_account = Account(**account_info)
+    ##id=account_id
     print(f"Created account with:\n{account_info}")
 
     session.add(new_account)
@@ -36,8 +37,9 @@ def edit_account(session, id, account_info):
     """
     account = session.query(Account).filter(Account.id == id).first()
     for field in account_info.keys():
+        print (field)
         account[field] = account_info[field]
-
+  
 
 def delete_accounts(session, ids):
     """Delete account with primary ids in ids"""
