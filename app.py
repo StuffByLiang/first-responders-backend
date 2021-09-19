@@ -20,6 +20,7 @@ app = Flask(__name__)
 CORS(app)  # enable cors from all domains
 
 profile = {
+    "id": None,
     "name": "Annie Liu",
     "age": 20,
     "address": "2205 Lower Mall",
@@ -111,6 +112,7 @@ def signup():
     id = run_transaction(
         sessionmaker(bind=engine), lambda s: create_account(s, profile)
     )
+    profile["id"] = id
     usr_ids.append(id)
 
     return jsonify(id=id, result="Account created!")
@@ -118,19 +120,7 @@ def signup():
 
 @app.route("/edit", methods=["PUT", "GET"])
 def edit():
-    if not all(
-        userField in request.json
-        for userField in (
-            "name",
-            "age",
-            "address",
-            "emergency_contact",
-            "blood_type",
-            "bmi",
-            "height",
-            "weight",
-        )
-    ):
+    if not request.json:
         abort(400, description="Resource not found")
     if not (
         field is str for field in ("name", "address", "emergency_contact", "blood_type")
@@ -139,7 +129,6 @@ def edit():
     if not (field is int or float for field in ("age", "bmi", "weight", "height")):
         abort(400, description="Keys are supposed to be numbers")
 
-    profile["id"] = request.json.get(["id"], profile["id"])
     profile["name"] = request.json.get(["name"], profile["name"])
     profile["age"] = request.json.get(["age"], profile["age"])
     profile["address"] = request.json.get(["address"], profile["address"])
