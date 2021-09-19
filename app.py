@@ -7,6 +7,9 @@ from twilio.jwt.access_token.grants import VideoGrant
 import uuid
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy_cockroachdb import run_transaction
+import uuid
+import pickle 
+
 from dbmain import (
     edit_account,
     get_roach_engine,
@@ -19,8 +22,15 @@ from dbmain import (
 app = Flask(__name__)
 CORS(app)  # enable cors from all domains
 
+## function to read serialized uuid object from file
+def readFile():
+    file = open('id', 'rb')
+    result = pickle.load(file)
+    file.close()
+    return result
+
 profile = {
-    "id": uuid.uuid4(),
+    "id": readFile(),
     "name": "Annie Liu",
     "age": 20,
     "address": "2205 Lower Mall",
@@ -108,12 +118,10 @@ def signup():
     profile["bmi"] = request.json["bmi"]
     profile["height"] = request.json["height"]
     profile["weight"] = request.json["weight"]
-
+    ## saves the account to the database
     id = run_transaction(
         sessionmaker(bind=engine), lambda s: create_account(s, profile)
     )
-    # profile["id"] = id
-    usr_ids.append(id)
 
     return jsonify(id=id, result="Account created!")
 
@@ -146,7 +154,6 @@ def edit():
     profile["bmi"] = request.json.get("bmi", profile["bmi"])
     profile["height"] = request.json.get("height", profile["height"])
     profile["weight"] = request.json.get("weight", profile["weight"])
-
     run_transaction(sessionmaker(bind=engine), lambda s: edit_account(s, profile["id"], profile))
 
     return jsonify({"profile": profile, "result": "Successfully edited!"})
@@ -154,5 +161,4 @@ def edit():
 
 if __name__ == "__main__":
     engine = get_roach_engine()
-    usr_ids = []
     app.run(debug=True)
