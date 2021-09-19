@@ -21,6 +21,7 @@ from dbmain import (
 
 app = Flask(__name__)
 CORS(app)  # enable cors from all domains
+engine = get_roach_engine()
 
 ## function to read serialized uuid object from file
 def readFile():
@@ -160,5 +161,4 @@ def edit():
 
 
 if __name__ == "__main__":
-    engine = get_roach_engine()
     app.run(debug=True)
