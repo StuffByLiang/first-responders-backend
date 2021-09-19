@@ -59,8 +59,8 @@ def parse_cmdline():
     return opt
 
 def get_roach_engine():
-    opt = parse_cmdline()
-    conn_string = opt.url
+    # opt = parse_cmdline()
+    # conn_string = opt.url
 
     load_dotenv()
     conn_string = os.environ.get('ROACH_CONN_STR')
