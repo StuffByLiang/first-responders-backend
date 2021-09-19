@@ -56,6 +56,9 @@ def retrieve():
     usr_info = run_transaction(
         sessionmaker(bind=engine), lambda s: query_account(s, profile["id"])
     )
+    usr_info["allergies"] = (usr_info["allergies"]).split(",")
+    usr_info["conditions"] = (usr_info["conditions"]).split(",")
+    usr_info["medications"] = (usr_info["medications"]).split(",")
     return jsonify(usr_info)
 
 
