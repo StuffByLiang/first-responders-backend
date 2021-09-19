@@ -18,12 +18,11 @@ def create_account(session, account_info, id=None):
     """Create account with a agenerated UUID and stores account_info to accounts table"""
     print("Creating new account")
     account_id = uuid.uuid4() if id is None else id
-    new_account = Account(id=account_id, **account_info)
+    new_account = Account(**account_info)
     print(f"Created account with:\n{account_info}")
 
     session.add(new_account)
-    return account_id
-
+    return account_info['id']
 
 def query_account(session, id, fields=None):
     """get fields of account with id"""
@@ -81,6 +80,7 @@ def get_roach_engine():
 
 if __name__ == '__main__':
     test = {
+        "id": uuid.uuid4(),
         "name": "Annie Liu",
         "age": 20,
         "address": "2205 Lower Mall",
@@ -102,6 +102,9 @@ if __name__ == '__main__':
     # Create Test Account 
     test_id = run_transaction(sessionmaker(bind=engine), lambda s: create_account(s, test))
     # Get info from test account
+    run_transaction(sessionmaker(bind=engine), lambda s: query_account(s, test_id))
+    test["name"] = 'Andrew Xie'
+    run_transaction(sessionmaker(bind=engine), lambda s: edit_account(s, test_id, test))
     run_transaction(sessionmaker(bind=engine), lambda s: query_account(s, test_id))
     # Delete account
     run_transaction(sessionmaker(bind=engine), lambda s: delete_accounts(s, [test_id]))
