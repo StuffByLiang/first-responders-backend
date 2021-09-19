@@ -17,9 +17,10 @@ from models import Account
 def create_account(session, account_info, id=None):
     """Create account with a agenerated UUID and stores account_info to accounts table"""
     print("Creating new account")
-    account_id = uuid.uuid4() if id is None else id
-    new_account = Account(**account_info)
-    ##id=account_id
+    account_id = uuid.uuid4()
+    acc_inf=account_info.copy()
+    del acc_inf['id']
+    new_account = Account(id=account_id, **acc_inf)
     print(f"Created account with:\n{account_info}")
 
     session.add(new_account)
@@ -60,10 +61,13 @@ def parse_cmdline():
 def get_roach_engine():
     opt = parse_cmdline()
     conn_string = opt.url
+
+    load_dotenv()
+    conn_string = os.environ.get('ROACH_CONN_STR')
+    
     try:
         db_uri = os.path.expandvars(conn_string)
         db_uri = urllib.parse.unquote(db_uri)
-
         psycopg_uri = (
             db_uri.replace("postgresql://", "cockroachdb://")
             .replace("postgres://", "cockroachdb://")
