@@ -5,6 +5,17 @@ from flask_cors import CORS
 from twilio.jwt.access_token import AccessToken
 from twilio.jwt.access_token.grants import VideoGrant
 
+from sqlalchemy.orm import sessionmaker
+from sqlalchemy_cockroachdb import run_transaction
+from dbmain import (
+    edit_account,
+    get_roach_engine,
+    create_account,
+    query_account,
+    delete_accounts,
+)
+
+
 app = Flask(__name__)
 CORS(app)  # enable cors from all domains
 
@@ -17,9 +28,9 @@ profile = {
     "blood_type": "AB",
     "conditions": [],
     "medications": [],
-    "BMI": 3,
+    "bmi": 3,
     "height": 165,
-    "weight": 50
+    "weight": 50,
 }
 
 
@@ -30,7 +41,10 @@ def profileSettings():
 
 @app.route("/userinfo", methods=["GET"])
 def retrieve():
-    return profile
+    usr_info = run_transaction(
+        sessionmaker(bind=engine), lambda s: query_account(s, usr_ids[0])
+    )
+    return jsonify(usr_info)
 
 
 load_dotenv()
@@ -67,36 +81,42 @@ def signup():
             "name",
             "age",
             "address",
-            "emergency contact",
-            "blood type",
-            "BMI",
+            "emergency_contact",
+            "blood_type",
+            "bmi",
             "height",
             "weight",
         )
     ):
         abort(400, description="Resource not found")
     if not (
-        field is str for field in ("name", "address", "emergency contact", "blood type")
+        field is str for field in ("name", "address", "emergency_contact", "blood_type")
     ):
         abort(400, description="Keys are supposed to be string")
-    if not (field is int or float for field in ("age", "BMI", "weight", "height")):
+    if not (field is int or float for field in ("age", "bmi", "weight", "height")):
         abort(400, description="Keys are supposed to be numbers")
 
-    profile['name'] = request.json['name']
-    profile['age'] = request.json['age']
-    profile['address'] = request.json['address']
-    profile['emergency contact'] = request.json['emergency contact']
-    profile['allergies'] = request.json['allergies']
-    profile['blood type'] = request.json['blood type']
-    profile['conditions'] = request.json['conditions']
-    profile['medications'] = request.json['medications']
-    profile['BMI'] = request.json['BMI']
-    profile['height'] = request.json['height']
-    profile['weight'] = request.json['weight']
+    profile["name"] = request.json["name"]
+    profile["age"] = request.json["age"]
+    profile["address"] = request.json["address"]
+    profile["emergency_contact"] = request.json["emergency_contact"]
+    profile["allergies"] = request.json["allergies"]
+    profile["blood_type"] = request.json["blood_type"]
+    profile["conditions"] = request.json["conditions"]
+    profile["medications"] = request.json["medications"]
+    profile["bmi"] = request.json["bmi"]
+    profile["height"] = request.json["height"]
+    profile["weight"] = request.json["weight"]
 
-    return jsonify(result = "Account created!")
+    id = run_transaction(
+        sessionmaker(bind=engine), lambda s: create_account(s, profile)
+    )
+    usr_ids.append(id)
 
-@app.route('/edit', methods=["PUT", "GET"])
+    return jsonify(id=id, result="Account created!")
+
+
+@app.route("/edit", methods=["PUT", "GET"])
 def edit():
     if not all(
         userField in request.json
@@ -104,37 +124,42 @@ def edit():
             "name",
             "age",
             "address",
-            "emergency contact",
-            "blood type",
-            "BMI",
+            "emergency_contact",
+            "blood_type",
+            "bmi",
             "height",
             "weight",
         )
     ):
         abort(400, description="Resource not found")
     if not (
-        field is str for field in ("name", "address", "emergency contact", "blood type")
+        field is str for field in ("name", "address", "emergency_contact", "blood_type")
     ):
         abort(400, description="Keys are supposed to be string")
-    if not (field is int or float for field in ("age", "BMI", "weight", "height")):
+    if not (field is int or float for field in ("age", "bmi", "weight", "height")):
         abort(400, description="Keys are supposed to be numbers")
 
+    profile["id"] = request.json.get(["id"], profile["id"])
     profile["name"] = request.json.get(["name"], profile["name"])
     profile["age"] = request.json.get(["age"], profile["age"])
     profile["address"] = request.json.get(["address"], profile["address"])
-    profile["emergency contact"] = request.json.get(
-        ["emergency contact"], profile["emergency contact"]
+    profile["emergency_contact"] = request.json.get(
+        ["emergency_contact"], profile["emergency_contact"]
     )
     profile["allergies"] = request.json.get(["allergies"], profile["allergies"])
-    profile["blood type"] = request.json.get(["blood type"], profile["blood type"])
+    profile["blood_type"] = request.json.get(["blood_type"], profile["blood_type"])
     profile["conditions"] = request.json.get(["conditions"], profile["conditions"])
     profile["medications"] = request.json.get(["medications"], profile["medications"])
-    profile["BMI"] = request.json.get(["BMI"], profile["BMI"])
+    profile["bmi"] = request.json.get(["bmi"], profile["bmi"])
     profile["height"] = request.json.get(["height"], profile["height"])
     profile["weight"] = request.json.get(["weight"], profile["weight"])
+
+    run_transaction(sessionmaker(bind=engine), lambda s: edit_account(s, profile))
 
     return jsonify({"profile": profile}, result="Successfully edited!")
 
 
 if __name__ == "__main__":
+    # engine = get_roach_engine()
+    usr_ids = []
     app.run(debug=True)

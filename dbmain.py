@@ -14,25 +14,6 @@ from models import Account
 
 # The code below inserts new accounts.
 
-
-def create_accounts(session, num):
-    """Create N new accounts with random account IDs and account balances."""
-    print("Creating new accounts...")
-    new_accounts = []
-    while num > 0:
-        account_id = uuid.uuid4()
-        account_balance = floor(random.random() * 1_000_000)
-        new_accounts.append(Account(id=account_id, balance=account_balance))
-        seen_account_ids.append(account_id)
-        print(
-            "Created new account with id {0} and balance {1}.".format(
-                account_id, account_balance
-            )
-        )
-        num = num - 1
-    session.add_all(new_accounts)
-
-
 def create_account(session, account_info, id=None):
     """Create account with a agenerated UUID and stores account_info to accounts table"""
     print("Creating new account")
@@ -51,6 +32,13 @@ def query_account(session, id, fields=None):
     # print(account.name, account['age'], account.get_fields())
     return account.get_fields(fields)
 
+def edit_account(session, id, account_info):
+    """Edit account with id for the given fields in account_info
+    """
+    account = session.query(Account).filter(Account.id == id).first()
+    for field in account_info.keys():
+        account[field] = account_info[field]
+
 
 def delete_accounts(session, ids):
     """Delete account with primary ids in ids"""
@@ -68,8 +56,9 @@ def parse_cmdline():
     opt = parser.parse_args()
     return opt
 
-
-def get_roach_engine(conn_string):
+def get_roach_engine():
+    opt = parse_cmdline()
+    conn_string = opt.url
     try:
         db_uri = os.path.expandvars(conn_string)
         db_uri = urllib.parse.unquote(db_uri)
@@ -90,11 +79,7 @@ def get_roach_engine(conn_string):
         print("{0}".format(e))
     return engine
 
-
-if __name__ == "__main__":
-    # load_dotenv()
-    # conn_string = os.environ.get("COCKROACHDB_CONN_STRING")
-
+if __name__ == '__main__':
     test = {
         "name": "Annie Liu",
         "age": 20,
@@ -109,18 +94,13 @@ if __name__ == "__main__":
         "weight": 50,
     }
 
-    opt = parse_cmdline()
-    conn_string = opt.url
-
     # For CockroachCloud:
     # postgres://<username>:<password>@<globalhost>:26257/<cluster_name>.defaultdb?sslmode=verify-full&sslrootcert=<certs_dir>/<ca.crt>
-    engine = get_roach_engine(conn_string)
-
-    """Tests"""
-    # Create Test Account
-    test_id = run_transaction(
-        sessionmaker(bind=engine), lambda s: create_account(s, test)
-    )
+    engine = get_roach_engine()
+    
+    '''Tests'''
+    # Create Test Account 
+    test_id = run_transaction(sessionmaker(bind=engine), lambda s: create_account(s, test))
     # Get info from test account
     run_transaction(sessionmaker(bind=engine), lambda s: query_account(s, test_id))
     # Delete account
